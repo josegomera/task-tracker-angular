@@ -1,4 +1,5 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { FormGroup, FormControl, Validators, FormBuilder } from '@angular/forms';
 import { Task } from 'src/app/Task';
 import { UiService } from 'src/app/services/ui.service';
 import { Subscription } from 'rxjs';
@@ -12,13 +13,16 @@ export class AddTaskComponent implements OnInit {
 
   @Output() onAddTask: EventEmitter<Task> = new EventEmitter
 
-  text!: string;
-  day!: string;
-  reminder: boolean = false
+  formTask = this.fb.group({
+    text: ['', Validators.required],
+    day: ['', Validators.required],
+    reminder: [false, Validators.requiredTrue],
+  })
+
   showAddTask!: boolean;
   subscription!: Subscription
 
-  constructor(private uiService: UiService) {
+  constructor(private uiService: UiService, private fb: FormBuilder) {
     this.subscription = this.uiService.onToggle().subscribe(value => this.showAddTask = value)
   }
 
@@ -26,23 +30,7 @@ export class AddTaskComponent implements OnInit {
   }
 
   onSubmit() {
-    if (!this.text) {
-      alert('Please add a task');
-      return;
-    }
-
-    const newTask = {
-      text: this.text,
-      day: this.day,
-      reminder: this.reminder
-    }
-
-    this.onAddTask.emit(newTask);
-
-    this.text = ''
-    this.day = ''
-    this.reminder = false
-
+    this.onAddTask.emit(this.formTask.value);
+    this.formTask.reset();
   }
-
 }
